@@ -1,0 +1,78 @@
+name: Gemini PR Reviewer for Technical Articles
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  review:
+    # PR作成・更新、またはPR内で「@gemini-cli /review」とコメントされたときに実行
+    if: |
+      github.event_name == 'pull_request' ||
+      (github.event_name == 'issue_comment' && 
+       github.event.issue.pull_request && 
+       contains(github.event.comment.body, '@gemini-cli /review'))
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Gemini PR Reviewer
+        uses: google-github-actions/run-gemini-cli@v0
+        with:
+          api-key: ${{ secrets.GEMINI_API_KEY }}
+          # ブログで指定されたプロンプトとルールを設定
+          prompt: |
+            You are a professional writer of technical articles.
+            Please review the following git diff of the article and provide feedback in Japanese.
+
+            Review Criteria (Prioritized in Review):
+            1. **Clarity and Searchability of Titles**
+               * Does the title allow readers to understand the content of the article at a glance?
+               * Does it include search keywords (SEO)?
+            2. **Clear Purpose of the Introduction**
+               * Why is this article being written? Who is the target audience?
+               * Are the issues being addressed and the benefits clearly stated?
+            3. **Logical Structure**
+               * Is the flow organized as “background → problem → solution → results → summary”?
+               * Are the headings (h2/h3) used appropriately?
+            4. **Accuracy and reproducibility of code**
+               * Does the code actually work?
+               * Are the environment, version, and dependencies clearly stated?
+            5. **Use of images and charts**
+               * Are diagrams and screenshots used as needed?
+               * Are captions or explanations provided?
+            6. **Definition of Terms and Consideration for Beginners**
+               * Are there explanations for technical terms and abbreviations?
+               * Are there explanations for points that beginners might find difficult?
+            7. **Reliability of Information and Sources**
+               * Are links or sources for external information clearly indicated?
+               * Is there a clear distinction between subjective and objective information?
+            8. **Writing Style and Readability**
+               * Are sentences too long?
+               * Are line breaks, bullet points, and emphasis (bold text, quotes) used appropriately?
+            9. **Does it align with Qiita's style?**
+               * Is Qiita's Markdown syntax used correctly?
+               * Are tags and categories set appropriately?
+            10. **Overall reading impression and explicit learning outcomes**
+                * Does the content leave readers feeling that they have learned something or want to try it out?
+                * Are the key points concisely summarized at the end?
+
+            Miscellaneous Considerations:
+            * Are there any typos or missing characters?
+            * Is there any unnatural Japanese?
+            * Are there any compliance violations or risks of controversy?
+            * Is there anything written that could damage the company's image?
+
+            Output Format:
+            - 総括（Overall Impression）
+            - 指意事項のリスト（重要度 High/Medium/Low、該当箇所、具体的な改善案）
