@@ -28,6 +28,8 @@ jobs:
 
       - name: Run Gemini PR Reviewer
         uses: google-github-actions/run-gemini-cli@v0
+        env:
+          GEMINI_CLI_TRUST_WORKSPACE: true
         with:
           gemini_api_key: ${{ secrets.GEMINI_API_KEY }}
           # ブログで指定されたプロンプトとルールを設定
