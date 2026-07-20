@@ -28,3 +28,16 @@ def create_log(log_in: ChallengeLogCreate):
 @app.get("/logs")
 def get_logs():
     return db_logs
+
+#週末に振り返りを記録する
+@app.put("/logs/{log_id}")
+def update_log(log_id: int, log_update: ChallengeLogUpdate):
+    # 指定されたIDのログを探す
+    for log in db_logs:
+        if log["id"] == log_id:
+            # 振り返りを更新する
+            log["reflection"] = log_update.reflection
+            return log
+    
+    # 指定されたIDのログが見つからなかった場合はエラーを返す
+    raise HTTPException(status_code=404, detail="Log not found")
