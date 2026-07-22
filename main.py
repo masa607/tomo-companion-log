@@ -1,5 +1,10 @@
 from fastapi import FastAPI, HTTPException
 from data import ChallengeLogCreate, ChallengeLogUpdate
+import models
+from database import engine
+
+# テーブルの自動作成
+models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
@@ -24,7 +29,7 @@ def create_log(log_in: ChallengeLogCreate):
     db_logs.append(log_data)
     return log_data
 
-#きちんと更新されているのか確認するため、全件取得する
+#全件取得する
 @app.get("/logs")
 def get_logs():
     return db_logs
