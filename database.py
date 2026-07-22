@@ -10,13 +10,13 @@ load_dotenv()
 # .env から DB 接続情報を取得
 # 例: mysql+pymysql://ユーザー名:パスワード@ホスト名:ポート/データベース名
 DATABASE_URL = os.getenv(
-    "DATABASE_URL"
+    "DATABASE_URL",
 )
 
 # SQLAlchemy エンジンの作成
 engine = create_engine(
     DATABASE_URL,
-    echo=True  # 実行されるSQLをターミナルに表示（デバッグ用）
+    echo=True  # 実行されるSQLをターミナルに表示
 )
 
 # データベースセッションの作成
