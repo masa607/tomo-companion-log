@@ -1,0 +1,8 @@
+language: "ja-JP"
+reviews:
+  profile: "chill"
+  auto_review:
+    enabled: true
+  instructions: |
+    Python (FastAPI, SQLAlchemy, Pydantic) のコードレビューを行ってください。
+    日本語で総括と改善点を具体的にフィードバックしてください。
