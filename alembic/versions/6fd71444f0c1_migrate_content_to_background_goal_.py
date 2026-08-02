@@ -13,7 +13,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision: str = '6fd71444f0c1'
-down_revision: Union[str, Sequence[str], None] = None
+down_revision: Union[str, Sequence[str], None] = '2c38bdef53d2'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
@@ -30,8 +30,8 @@ def upgrade() -> None:
     op.execute("UPDATE companion_logs SET action = '未設定（自動移行）' WHERE action IS NULL")
 
     # 3. 必須指定（NOT NULL）に変更
-    op.alter_column('companion_logs', 'goal', nullable=False)
-    op.alter_column('companion_logs', 'action', nullable=False)
+    op.alter_column('companion_logs', 'goal', existing_type=sa.Text(), nullable=False)
+    op.alter_column('companion_logs', 'action', existing_type=sa.Text(), nullable=False)
 
     # 4. 旧カラム content を削除
     op.drop_column('companion_logs', 'content')
