@@ -2,7 +2,6 @@ import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
-from base import Base 
 
 load_dotenv()
 
@@ -21,17 +20,3 @@ def get_db():
         yield db
     finally:
         db.close()
-
-if __name__ == "__main__":
-    import models  
-
-    print("--- 登録されているテーブル確認 ---")
-    print(Base.metadata.tables.keys())
-
-    print("既存のテーブルを削除しています...")
-    Base.metadata.drop_all(bind=engine)
-
-    print("新しいテーブルを作成しています...")
-    Base.metadata.create_all(bind=engine)
-
-    print("テーブルの初期化・再作成が完了しました！")

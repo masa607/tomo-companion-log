@@ -1,29 +1,32 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import Optional
 from datetime import datetime
-from database import Base
 
-# 1. 新規作成用（目標設定）
-class ChallengeLogCreate(BaseModel):
+# 共通ベース
+class ChallengeLogBase(BaseModel):
     title: str
-    background: str
+    background: Optional[str] = None
     goal: str
     action: str
 
-# 2. 週末の振り返り更新用（達成度・良かったこと・悪かったこと）
-class ChallengeLogUpdate(BaseModel):
-    achievement_rate: Optional[int] = None # 例: 80 (80%)
-    good_points: Optional[str] = None     # 良かったこと
-    bad_points: Optional[str] = None      # 悪かったこと・改善点
+# 1. 新規作成用
+class ChallengeLogCreate(ChallengeLogBase):
+    user_id: Optional[int] = None
 
-# 3. APIからのレスポンス用
-class ChallengeLogResponse(ChallengeLogCreate):
+# 2. 振り返り更新用
+class ChallengeLogUpdate(BaseModel):
+    achievement_rate: Optional[int] = None
+    good_points: Optional[str] = None
+    bad_points: Optional[str] = None
+
+# 3. APIレスポンス用
+class ChallengeLogResponse(ChallengeLogBase):
     id: int
+    user_id: Optional[int] = None
     achievement_rate: Optional[int] = None
     good_points: Optional[str] = None
     bad_points: Optional[str] = None
     created_at: datetime
     updated_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
