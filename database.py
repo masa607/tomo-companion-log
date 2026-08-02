@@ -28,10 +28,8 @@ if __name__ == "__main__":
     print("--- 登録されているテーブル確認 ---")
     print(Base.metadata.tables.keys())
 
-    print("既存のテーブルを削除しています...")
-    Base.metadata.drop_all(bind=engine)
-
-    print("新しいテーブルを作成しています...")
+    # drop_all を消すことで、既存データは保持される
+    print("未作成のテーブルがあれば作成します...")
     Base.metadata.create_all(bind=engine)
 
-    print("テーブルの初期化・再作成が完了しました！")
+    print("テーブルの準備が完了しました！")
