@@ -1,48 +1,47 @@
-from fastapi import FastAPI, HTTPException
-from data import ChallengeLogCreate, ChallengeLogUpdate
-import models
-from database import engine
+from fastapi import FastAPI, HTTPException, Depends
+from sqlalchemy.orm import Session
+from typing import List
 
-# テーブルの自動作成
-models.Base.metadata.create_all(bind=engine)
+import models
+import schemas
+from database import get_db
 
 app = FastAPI()
-
-db_logs = []
 
 @app.get("/")
 def read_root():
     return {"message": "Hello World"}
 
-#挑戦ログを新規投稿する
-@app.post("/logs")
-def create_log(log_in: ChallengeLogCreate):
-    # 送られてきたデータを、扱いやすいように辞書型に変換する
-    log_data = log_in.model_dump()
+# 1. 挑戦ログを新規投稿する
+@app.post("/logs", response_model=schemas.ChallengeLogResponse)
+def create_log(log_in: schemas.ChallengeLogCreate, db: Session = Depends(get_db)):
+    # PydanticモデルからSQLAlchemyモデルオブジェクトを作成
+    db_log = models.CompanionLog(**log_in.model_dump())
     
-    # あとで更新や特定ができるように、仮のIDと、振り返りの初期値を追加する
-    log_data["id"] = len(db_logs) + 1
-    # 新規投稿時は振り返りはまだ無いので空にする
-    log_data["reflection"] = ""  
-    
-    # 仮のデータベース（リスト）に保存
-    db_logs.append(log_data)
-    return log_data
+    db.add(db_log)       # DBに追加
+    db.commit()          # 変更を確定
+    db.refresh(db_log)   # 自動生成されたIDやタイムスタンプを取得
+    return db_log
 
-#全件取得する
-@app.get("/logs")
-def get_logs():
-    return db_logs
+# 2. 全件取得する
+@app.get("/logs", response_model=List[schemas.ChallengeLogResponse])
+def get_logs(db: Session = Depends(get_db)):
+    logs = db.query(models.CompanionLog).all()
+    return logs
 
-#週末に振り返りを記録する
-@app.put("/logs/{log_id}")
-def update_log(log_id: int, log_update: ChallengeLogUpdate):
-    # 指定されたIDのログを探す
-    for log in db_logs:
-        if log["id"] == log_id:
-            # 振り返りを更新する
-            log["reflection"] = log_update.reflection
-            return log
+# 3. 週末に振り返りを記録する
+@app.put("/logs/{log_id}", response_model=schemas.ChallengeLogResponse)
+def update_log(log_id: int, log_update: schemas.ChallengeLogUpdate, db: Session = Depends(get_db)):
+    # 該当のログを検索
+    db_log = db.query(models.CompanionLog).filter(models.CompanionLog.id == log_id).first()
+    if not db_log:
+        raise HTTPException(status_code=404, detail="Log not found")
     
-    # 指定されたIDのログが見つからなかった場合はエラーを返す
-    raise HTTPException(status_code=404, detail="Log not found")
+    # 送られてきた（Noneでない）値だけを更新
+    update_data = log_update.model_dump(exclude_unset=True)
+    for key, value in update_data.items():
+        setattr(db_log, key, value)
+        
+    db.commit()
+    db.refresh(db_log)
+    return db_log

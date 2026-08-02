@@ -8,5 +8,8 @@ __pycache__/
 
 .env
 .env.*
+<<<<<<< HEAD
 
+=======
+>>>>>>> 620a18b3b821c67f6482127a9c42e59acbb0a65f
 !.env.example
