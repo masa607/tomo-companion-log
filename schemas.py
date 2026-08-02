@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime
+from database import Base
 
 # 1. 新規作成用（目標設定）
 class ChallengeLogCreate(BaseModel):
